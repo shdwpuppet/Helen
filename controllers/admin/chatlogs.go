@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"encoding/json"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -28,13 +27,6 @@ var (
 func getPlayerID(steamID string) (playerID uint) {
 	db.DB.Model(&player.Player{}).Select("id").Where("steam_id = ?", steamID).Row().Scan(&playerID)
 	return
-}
-
-func cleanUp(s string) string {
-	re := regexp.MustCompile(`\b(\\\d\d\d)`)
-	return re.ReplaceAllStringFunc(s, func(s string) string {
-		return `\u0` + s[1:]
-	})
 }
 
 func GetChatLogs(w http.ResponseWriter, r *http.Request) {
@@ -109,10 +101,7 @@ func GetChatLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	o, _:= json.Marshal(messages)
-	
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(o)
+	err = chatLogsTempl.Execute(w, messages)
 	if err != nil {
 		logrus.Error(err)
 	}
