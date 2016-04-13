@@ -6,9 +6,9 @@ package admin
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"time"
+	"encoding/json"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/TF2Stadium/Helen/config"
@@ -17,7 +17,6 @@ import (
 	"golang.org/x/net/xsrftoken"
 )
 
-var banlogsTempl *template.Template
 
 func BanPlayer(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
@@ -118,9 +117,10 @@ func GetBanLogs(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
-
-	err := banlogsTempl.Execute(w, bans)
+	o, err:= json.Marshal(bans)
 	if err != nil {
 		logrus.Error(err)
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(o)
 }
